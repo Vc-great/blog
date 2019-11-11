@@ -1,0 +1,548 @@
+# webpack
+
+## 问题
+
+1. dev 和pro环境需要单独配置entry 和 output 么   P57
+2. webpack-dev-server的output.publicPath 默认值是什么  需要设置成/dist/么
+3. 
+
+## 前言
+
+### 什么是webpack
+
+JS打包工具: 核心功能是解决模块之间的依赖,把各个模块按照特定的规则和顺序组织在一起,最终合并为一个或多个JS文件
+
+### 为什么需要webpack
+
+- 模块化思想
+
+  按照特定的功能进行拆分为多个代码段,每个代码段实现一个特定的目的.你可以对其进行独立的设计,开发和测试,最后通过接口将它们组合在一起
+
+- 为什么用模块化思想
+
+  - 之前
+    1. 页面达到一定体量后,很难清晰的指明依赖关系
+    2. 每个script都会向服务器请求资源,HTT2之前连接成本很高,过多请求会拖慢网页渲染速度
+    3. 每个script标签中,顶级作用域就是全局作用域,容易造成全局作用域污染
+  - 之后
+
+  1. 导入导出清晰看到模块间的依赖关系
+  2. 借助工具进行打包,在页面只需要加载合并后的资源,减少网络开销
+  3. 多个模块之间作用域是隔离的,彼此不会有命名冲突
+
+- 解决方案
+
+  - AMD   `define` 和 `require` 语句 
+  - CMD
+  - CommonJS     `require()` 语句 
+  - ES6  `import()`
+    正式定义了JS模块标准
+
+- 打包工具
+
+  **为什么用工具:**使用模块化的同时也能正常运行在游览器中
+
+  **做了什么:**
+
+  1. 存在依赖关系的模块按照特定的规则合并为单个JS文件,一次全部加载进页面
+  2. 在页面初始化时候加载一个入口模块,其他模块异步的进行加载
+
+  #### 补充知识
+
+  - require
+    - 第一次被加载.这是会首先执行该模块,然后导出内容
+    - require的模块曾被加载过.这时该模块的代码不会再次执行,而是`直接导出上次执行后得到的结果`
+
+  - CommonJS与ES 6 Module区别
+
+    - commonJS是`动态`,模块依赖关系的建立发生在代码运行阶段
+    - ES 6 Module 是`静态`,模块依赖关系的建立发生在代码编译阶段
+    - commonJS获取的是导出值的`拷贝`,ES 6 Module则是值的`动态映射`,并且这个映射是`只读的`
+    - ES 6 Module`优势`
+      1. `死代码检测和排除.`通过静态分析可以在打包时去掉未曾使用过的模块,减小打包资源体积
+      2. `模块类型变量检查.`JS属于动态类型语言,不会在代码执行前进行类型检查.静态模块结构有助于确保模块之间传递的值或接口类型是正确的
+      3. `编译器优化.`在CommonJS等动态模块系统中,无论采用哪种方式,本质上导入的都是一个对象,而`ES6 Module`支持直接导入变量,减少了`引用层级`,程序效率`更高`
+
+  - 循环依赖
+
+    > A模块依赖于B,同时B模块又依赖A
+
+    1. commonJS 由于是值的拷贝,不会动态映射,循环引时,不会获取到正确的结果
+    2. ES6 Module 动态映射会在依赖改变后跟随更新,只是需要开发者保证导入的值被使用时已经设置好正确导出的值
+
+    ```js
+    #A
+    const B= require('./B.js')
+    console.log('导出',B);
+    module.exports = 'A.js'
+    #B
+    const A = require('./A.js')
+    console.log('导出A',A);
+    module.exports = 'B.js'
+    #index
+    require('./A.js')
+    
+    导出A {}
+    导出 B.js
+    //执行A.js---->加载B---->导入A,但是A没有加载完默认导出{}---->在继续执行A---->打印B
+    
+    ```
+
+  - AMD 
+
+    - 与CommonJS和ES6 Module 最大的区别在于它加载模块的方式是异步的
+
+    - AMD异步加载的方式并不如同步显得清晰,并且容易造成回调地狱
+
+    - 目前`应用的越来越少`
+
+  - UMD
+
+    - 通用模块标准,一个模块能运行在各种环境下
+    - UMD根据当前全局对象中的值判断目前处于哪种模块环境
+    - `注意:`webpack中,由于它同时支持AMD及CommonJS,也许工程所有模块都是commonJS,而UMD标准却发现当前有AMD环境,并使用了AMD方式导出,这会使得模块导入时出错.当需要这样做时,我们可以更改UMD模块中判断的顺序,使其已CommonJS的形式导出
+
+    
+
+### 为什么选择weback
+
+>  Webpack parcel Rollup
+
+- 优势
+  1. 默认支持多种模块标准,AMD 、 CommonJS 、 ES6,其他工具大多只能支持一到两种
+  2. `懒加载:`有完备的代码分割解决方案,分割打包后资源,首屏只加载必要的部分,不太重要功能放到后面动态的加载
+  3. 可以处理各种类型的资源,样式 、模版 、图片等
+  4. 周边生态好,大部分需求都有解决方案
+
+## entry chunk bundle
+
+### chunk
+
+​		代码块,webpack包装了一层依赖树,形成了chunk
+
+### bundle
+
+​		由chunk得到打包产物叫bundle
+
+![](D:\个人\Blog\webpack.assets\entry-chunk-bundle.png)
+
+## context
+
+资源入口`路径前缀`,在配置时要求必须使用绝对路径,只能为字符串
+
+`目的:`让entry的编写更加简洁,尤其在多入口的情况下
+
+context`可以省略`,默认值为当前工程的`根目录`
+
+```js
+入口为<工程根路径>/src/scripts/index.js
+两种配置效果相同
+#第一种
+module.exports = {
+	context:path.join(__dirname,'./src')
+	entry:'./scripts/index.js'
+}
+#第二种
+module.exports = {
+	context:path.join(__dirname,'./src/scripts')
+	entry:'./index.js'
+}
+
+```
+
+
+
+## 入口 (Entry)
+
+> 默认值为  `./src`
+
+### 类型
+
+- 字符串
+
+  ```js
+  #单个入口
+  entry: './app.js'
+  #等价于 
+  entry: {
+      main: './app.js'
+  }
+  
+  ```
+
+- 数组
+
+   数组里所有文件打包成一个js文件
+
+  打包时webpack会将数组中的最后一个元素作为实际的入口路径
+
+  ```js
+   app: ["babel-polyfill", "./src/main.js"]
+  ```
+
+- 对象
+
+   把对象里的文件分别打包成多个文件
+
+  常见情景:`多页面应用`
+
+  entry的`key`对应output.filename的`[name]`变量
+
+  ```js
+  
+  entry: {
+      chunk name 为app  路径为'./src/main.js'
+      'app': './src/main.js'
+  },
+  output: {
+      filename: '[name].js'
+  }
+  ```
+
+  ### 知识补充
+
+  #### chunk name
+
+  ​	在使用字符串和数组定义单入口时,并没有办法更改chunk name,只能为默认值'main'
+
+  [令人困惑的 webpack 之 entry](https://juejin.im/entry/58a54d0861ff4b0069875b50)
+
+## 出口 (output)
+
+> 　 默认值为 `./dist` 
+
+### 　多入口
+
+多入口或配置创建多个`chunk`,需要确保每个文件具有唯一的名称
+
+
+
+```js
+module.exports = {
+  entry: {
+    app: './src/app.js',
+    search: './src/search.js'
+  },
+  output: {
+    filename: '[name].js',
+    path: __dirname + '/dist'
+  }
+};
+
+// 写入到硬盘：./dist/app.js, ./dist/search.js
+```
+
+1. `publicPath:`JS文件内部引用其他文件的路径
+
+### filname
+
+`filname`中的`[name]`会被`替换`为`chunk name`
+
+| 变量名称    | 功能描述                              |
+| ----------- | ------------------------------------- |
+| [hash]      | 指代webpack此次打包所有资源生成的hash |
+| [chunkhash] | 指代当前chunk内容的hash               |
+| [id]        | 指代当前chunk的id                     |
+
+- 作用
+
+  - 区分不同的chunk
+  - `控制客户端缓存:`当chunk内容改变时,客厅同事引起资源文件名的更改,从而使用用户在下一次请求资源文件时会`立即`下载`新的`版本而不会使用本地缓存
+
+- 注意:
+
+  - 更新缓存一版只用在生产环境的配置下,在开发环境中可以不必
+  - 
+
+  ```js
+  #开发环境
+  filname:[name].js
+  #生产环境 为了用户访问的是最新的文件增加chunkhash
+  output:{
+  filname:'[name]@[chunkhash].js'
+  }
+  ```
+
+- 
+
+### path
+
+指定资源的`输出位置`,要求值必须为觉得路径
+
+output.path`默认值为dist目录`
+
+### publicPath
+
+指定资源的`请求位置`
+
+> `请求位置:`由JS或CSS所请求的间接资源路径.页面资源分为`两种`,第一种由`HTML页面直接请求的`,比如通过`script标签加载的JS`,另一种由`JS或者CSS请求的`,如`异步加载的JS,从CSS请求的图片字体`等
+
+publicPath共有`三种`形式
+
+1. HTML相关   (**相对路径**)
+   以当前页面HTML所在的**路径**`加上`**相对路径**,构成实际请求的URL
+
+2. Host相关   (**相对路径**)
+
+   若publicPath的值以`'/'开始`,则代表此时publicPath是`以当前页面的hosts name为基础路径`
+
+3. CDN相关  (**绝对路径**)
+
+```js
+当前地址 abc.com/app/index.html
+异步加载1.js
+#HTML  app+js   app/js
+publucPath:''   //     abc.com/app/1.js
+publucPath:'./js'  //      abc.com/app/js/1.js
+publucPath:'../assets'   //     abc.com/assets/1.js
+#Host    abc.com/js
+publucPath:'/'   //     abc.com/1.js
+publucPath:'/js/'  //      abc.com/js/1.js
+publucPath:'/dist/'   //     abc.com/dist/1.js
+#CDN   cdn.com/1.js
+publucPath:'http://cdn.com'   //    http://cdn.com/1.js
+publucPath:'https:cdn.com'  //      https:cdn.com/1.js
+publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
+```
+
+`webpack-dev-server`的配置中也有一个`publicPath`,值得注意的是,这个publicPath与`webpack`的配置项含义`不同`,它的作用是`指定`webpack-dev-server的`静态资源服务路径`
+
+建议`webpack-dev-server`的publicPath与webpack中的output.path`保持一致`,这样在任何环境下资源的输出的目录都是相同的
+
+## loader
+
+​    webpack自身只理解Javascript,`loader`可以把其余类型文件转换为webpack能识别的内容
+
+​	每个loader的本质都是一个函数
+
+​	在`import`或`加载`模块时预处理文件
+
+1. `test:`用于标识出需要被loader转换的文件 (`正则表达式或正则表达式的数组`)
+
+   >  确保转译尽可能少的文件。你可能使用 `/\.m?js$/` 来匹配，这样也许会去转译 `node_modules` 目录或者其他不需要的源代码 
+   >
+   >  你也可以通过使用 `cacheDirectory` 选项，将 babel-loader 提速至少两倍。这会将转译的结果缓存到文件系统中
+
+2. `use:`进行转换时,应该使用哪个loader  (数组)  `从左向右`
+
+3. `options:`配置项
+
+4. `exclude`和`include`同时存在,`exclude`的优先级`更高`
+
+   ```js
+   #排除node_modules中除了foo和bar以外的所有模块
+   rules :[
+   	{
+   	test:/\.css$/,
+   	use:['style-loader','css-loader'],
+   	//排除node_modules中除了foo和bar以外的所有模块
+   	excluede:/node_modules\/(?!(foo|bar)\/).*/
+       }
+   ]
+   #仅对src生效 但仍然可以通过exclude排除其中的src/lib目录
+   rules:[
+       {
+           test:'\.css$',
+           use:['style-loader','css-loader'],
+           excluede:/src\/lib/,
+           inclue:/src/
+    }
+   ]
+   ```
+
+5. `resource和issuer:`更加精确的确定模块规则的作用范围
+
+6. `enforce:`用来指定一个loader种类,只接收`pre`或`post`两种字符串类型的值
+
+   > **目的:**使模块规则更加清晰,可读性更强
+   >
+   >   loader执行顺序分为:`pre` `inline`  `normal`  `post`
+   >
+   > `pre`将在所有正常loader之前执行 如 eslint-loaeder 确保代码没有被其他loader修改过
+   >
+   > `post`将在所有loader之后执行 
+   >
+   > 直接定义的都属于 `normal`
+   >
+   > `inline`官方不推荐使用
+   >
+   > 
+
+### 特点
+
+1. 链式传递,解析`从左到右`
+2. loader可以是`同步`,也可以时`异步`
+
+3. loader能够产生额外的任意文件
+
+### 样式
+
+- [`style-loader`](https://webpack.docschina.org/loaders/style-loader) 将模块的导出作为样式添加到 DOM 中
+- [`css-loader`](https://webpack.docschina.org/loaders/css-loader) 解析 CSS 文件后，使用 import 加载，并且返回 CSS 代码
+- [`less-loader`](https://webpack.docschina.org/loaders/less-loader) 加载和转译 LESS 文件
+- [`sass-loader`](https://webpack.docschina.org/loaders/sass-loader) 加载和转译 SASS/SCSS 文件
+- [`postcss-loader`](https://webpack.docschina.org/loaders/postcss-loader) 使用 [PostCSS](http://postcss.org/) 加载和转译 CSS/SSS 文件
+-  [`vue-loader`](https://github.com/vuejs/vue-loader) 加载和转译 [Vue 组件](https://vuejs.org/v2/guide/components.html) 
+
+## 常用loader
+
+### babel-loader
+
+- `babel-loader` 使babel与webpack协同工作的模块
+- `@babel/core` babel编译器的核心模块
+- `@babel/prest-env`Babel官方推荐的预置器,可根据用户设置的`目标环境`自动`添加`所需的`插件`和`补丁`来编译`ES6+`代码
+
+​    babel-loader会将所有JS文件都进行编译,所以需要在exclude中添加`node_modules`,否则会令babel-loader编译其中的所有模块,会严重`拖慢打包速度`,并且有可能`修改第三方模块原有的行为`
+
+​    `cacheDirectory`启用缓存机制,在重复打包没有改变过的的模块时`防止二次编译`,还可以加快`打包速度`.可以接收`字符串类型的路径`作为缓存路径,也可以时`true`,此时的缓存路径为`node_modules/.cache/babel-loader`
+
+​    `@babel/presr-env`将ES6 Module 转化为CommonJS的形式,这会导致webpack的TRee-shaking失效.将@babel/prest-env的modules配置项设置为false会禁用模块语句的转化并且将es Moudle的语法交给
+
+## Moudule
+
+模块,最多用的是rules配置项,匹配对应的后缀,按照规则进行转换
+
+
+
+### 插件
+
+loader只能用于转换模块,插件可以处理`整个编译生命周期`中各类任务
+
+- 
+
+## 模式 (mode)
+
+> 设置mode配置名称,webpack会启用内置优化
+>
+> `默认:`production
+
+###  development 
+
+> 　 会将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `development`。启用 `NamedChunksPlugin` 和 `NamedModulesPlugin`。 
+
+```js
+// webpack.development.config.js
+module.exports = {
++ mode: 'development'
+- devtool: 'eval',
+- cache: true,
+- performance: {
+-   hints: false
+- },
+- output: {
+-   pathinfo: true
+- },
+- optimization: {
+-   namedModules: true,
+-   namedChunks: true,
+-   nodeEnv: 'development',
+-   flagIncludedChunks: false,
+-   occurrenceOrder: false,
+-   sideEffects: false,
+-   usedExports: false,
+-   concatenateModules: false,
+-   splitChunks: {
+-     hidePathInfo: false,
+-     minSize: 10000,
+-     maxAsyncRequests: Infinity,
+-     maxInitialRequests: Infinity,
+-   },
+-   noEmitOnErrors: false,
+-   checkWasmTypes: false,
+-   minimize: false,
+- },
+- plugins: [
+-   new webpack.NamedModulesPlugin(),
+-   new webpack.NamedChunksPlugin(),
+-   new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("development") }),
+- ]
+}
+```
+
+
+
+###  production 
+
+>  会将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `production`。启用 `FlagDependencyUsagePlugin`, `FlagIncludedChunksPlugin`, `ModuleConcatenationPlugin`, `NoEmitOnErrorsPlugin`, `OccurrenceOrderPlugin`, `SideEffectsFlagPlugin` 和 `TerserPlugin`  　　
+
+```js
+// webpack.production.config.js
+module.exports = {
++  mode: 'production',
+- performance: {
+-   hints: 'warning'
+- },
+- output: {
+-   pathinfo: false
+- },
+- optimization: {
+-   namedModules: false,
+-   namedChunks: false,
+-   nodeEnv: 'production',
+-   flagIncludedChunks: true,
+-   occurrenceOrder: true,
+-   sideEffects: true,
+-   usedExports: true,
+-   concatenateModules: true,
+-   splitChunks: {
+-     hidePathInfo: true,
+-     minSize: 30000,
+-     maxAsyncRequests: 5,
+-     maxInitialRequests: 3,
+-   },
+-   noEmitOnErrors: true,
+-   checkWasmTypes: true,
+-   minimize: true,
+- },
+- plugins: [
+-   new TerserPlugin(/* ... */),
+-   new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("production") }),
+-   new webpack.optimize.ModuleConcatenationPlugin(),
+-   new webpack.NoEmitOnErrorsPlugin()
+- ]
+}
+```
+
+### none
+
+```js
+// webpack.custom.config.js
+module.exports = {
++ mode: 'none',
+- performance: {
+-  hints: false
+- },
+- optimization: {
+-   flagIncludedChunks: false,
+-   occurrenceOrder: false,
+-   sideEffects: false,
+-   usedExports: false,
+-   concatenateModules: false,
+-   splitChunks: {
+-     hidePathInfo: false,
+-     minSize: 10000,
+-     maxAsyncRequests: Infinity,
+-     maxInitialRequests: Infinity,
+-   },
+-   noEmitOnErrors: false,
+-   checkWasmTypes: false,
+-   minimize: false,
+- },
+- plugins: []
+}
+```
+
+## webpack-dev-server
+
+- 令webpack进行模块打包,并处理打包结果的资源请求
+- 作为普通的web Server,处理静态资源文件请求
+- 打包结果会放到`内存中`,
+- 接收到请求时,都知识将内存中的打包结果返回给游览器
+
+> 开发环境服务,可以不build查看页面
+>
+> 主要工作就是接收游览器请求,然后将资源返回,`启动服务`的时候会让webpack进行模块化打包并将资源准备好,`webpack-dev-server`接收到游览器的资源请求时,首先进行`URL地址校验`,如果地址为资源服务地址(`publicPath`),就会从webpack的打包结果中寻找该资源并返回给游览器.如果`不属于`资源服务地址,则直接读取硬盘中的源文件并将其返回
+
+## vendor
+
+webpack中vendor一般指工程所使用的库,框架等第三方模块集中打包产生的bundle
