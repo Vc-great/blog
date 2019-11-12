@@ -294,7 +294,7 @@ publicPath共有`三种`形式
 #HTML  app+js   app/js
 publucPath:''   //     abc.com/app/1.js
 publucPath:'./js'  //      abc.com/app/js/1.js
-publucPath:'../assets'   //     abc.com/assets/1.js
+publucPath:'../assets/'   //     abc.com/assets/1.js
 #Host    abc.com/js
 publucPath:'/'   //     abc.com/1.js
 publucPath:'/js/'  //      abc.com/js/1.js
@@ -383,6 +383,8 @@ publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
 - [`sass-loader`](https://webpack.docschina.org/loaders/sass-loader) 加载和转译 SASS/SCSS 文件
 - [`postcss-loader`](https://webpack.docschina.org/loaders/postcss-loader) 使用 [PostCSS](http://postcss.org/) 加载和转译 CSS/SSS 文件
 -  [`vue-loader`](https://github.com/vuejs/vue-loader) 加载和转译 [Vue 组件](https://vuejs.org/v2/guide/components.html) 
+-  `file-loader`打包文件类型的资源,并返回其`publicPath`
+-  `url-loader:`与`file-loader`唯一不同在于用户可以设置一个文件大小的阈值(`limit`),当大于该阈值时与`file-loader`一样返回`publicPath`而小于该阈值时则返回文件`base64`形式编码
 
 ## 常用loader
 
@@ -396,7 +398,11 @@ publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
 
 ​    `cacheDirectory`启用缓存机制,在重复打包没有改变过的的模块时`防止二次编译`,还可以加快`打包速度`.可以接收`字符串类型的路径`作为缓存路径,也可以时`true`,此时的缓存路径为`node_modules/.cache/babel-loader`
 
-​    `@babel/presr-env`将ES6 Module 转化为CommonJS的形式,这会导致webpack的TRee-shaking失效.将@babel/prest-env的modules配置项设置为false会禁用模块语句的转化并且将es Moudle的语法交给
+​    `@babel/presr-env`将ES6 Module 转化为CommonJS的形式,这会导致webpack的TRee-shaking失效.将@babel/prest-env的modules配置项设置为false会禁用模块语句的转化并且将es Moudle的语法交给webpack本身处理
+
+​		babel-loader支持`.babelrc`文件读取到Babel配置,可以将`presets`和`plugins`从webpack配置文件`提取`出来,也能达到`相同的效果`
+
+
 
 ## Moudule
 
