@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="issues">
+    <option name="index">
+      <map>
+        <entry key="/Dummy.txt">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/README.md">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/webpack.md">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/参考项目/boms2.2 dashboard/build/webpack.base.conf.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/参考项目/vue cli/A.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/参考项目/vue cli/B.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/参考项目/vue cli/index.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/参考项目/webpack 优化/paas-web/build/webpack.base.conf.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/参考项目/webpack 优化/paas-web/build/webpack.dev.conf.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/工作/boms-develop/config/index.js">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="D:/工作/boms-develop/src/page/boms/report/detail/monitorReport.vue">
+          <value>
+            <set />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

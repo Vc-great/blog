@@ -4,13 +4,12 @@
 
 1. dev 和pro环境需要单独配置entry 和 output 么   P57
 2. webpack-dev-server的output.publicPath 默认值是什么  需要设置成/dist/么
-3. 
 
 ## 前言
 
 ### 什么是webpack
 
-JS打包工具: 核心功能是解决模块之间的依赖,把各个模块按照特定的规则和顺序组织在一起,最终合并为一个或多个JS文件
+`JS打包工具` 核心功能是解决模块之间的依赖,把各个模块按照特定的规则和顺序组织在一起,最终合并为一个或多个JS文件
 
 ### 为什么需要webpack
 
@@ -309,6 +308,16 @@ publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
 
 建议`webpack-dev-server`的publicPath与webpack中的output.path`保持一致`,这样在任何环境下资源的输出的目录都是相同的
 
+## Moudule
+
+模块,最多用的是rules配置项,匹配对应的后缀,按照规则进行转换
+
+
+
+### 插件
+
+loader只能用于转换模块,插件可以处理`整个编译生命周期`中各类任务
+
 ## loader
 
 ​    webpack自身只理解Javascript,`loader`可以把其余类型文件转换为webpack能识别的内容
@@ -404,9 +413,9 @@ publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
 
 
 
-## Moudule
+## 插件  (plugins)
 
-模块,最多用的是rules配置项,匹配对应的后缀,按照规则进行转换
+用于接收一个数组插件,我们可以使用Webpack内部提供的一些插件,也可以加载外部插件.Webpack为插件提供了各种API,使其可以在打包的各个环节中添加一些额外任务
 
 
 
@@ -414,7 +423,14 @@ publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
 
 loader只能用于转换模块,插件可以处理`整个编译生命周期`中各类任务
 
-- 
+### 常用插件
+
+- extract-text-webpack-plugin
+  专门用于提取样式到CSS文件的,将样式存在css文件中而不是style标签中,`利于客户端进行缓存`
+
+- mini-css-extract-plugiin
+
+  `extract-text-webpack-plugin`升级版,Webpack4启用,支持`按需加载`
 
 ## 模式 (mode)
 
