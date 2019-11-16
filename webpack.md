@@ -1,9 +1,6 @@
-# webpack
+# webpack 4
 
-## 问题
-
-1. dev 和pro环境需要单独配置entry 和 output 么   P57
-2. webpack-dev-server的output.publicPath 默认值是什么  需要设置成/dist/么
+>  webpack4不再支持Node 4，由于使用了JavaScript新语法，Webpack的创始人之一，Tobias，建议用户使用`Node版本 >= 8.94`，以便使用最优性能。
 
 ## 前言
 
@@ -262,7 +259,30 @@ module.exports = {
   }
   ```
 
-- 
+
+### chunkFilename
+
+用来指定异步chunk的文件名,命名规则与filename基本一致
+
+```js
+output:{
+filname:'[name]@[chunkhash].js'
+chunkFilename:'[name]@[chunkhash].js'
+}
+```
+
+### hash 、chunkhash 、 contenthash 
+
+- hash : 编译的时候生成的hash有文件修改,就会编译一下创建新的hash,每当代码发送变化时响应的hash也会变化
+- chunkhash :  根据chunk生成的hash值,每个chunk单独计算依次hash
+
+- contenthash :   contenthash可以解决的是，css模块修改后，js哈希值变动的问题。 contenthash并不能解决moduleId自增的问题
+
+### 持久化缓存方案        `需实践`
+
+[[基于webpack4[.3+\]构建可预测的持久化缓存方案]](https://github.com/jiangjiu/blog-md/issues/49) 
+
+[基于 webpack 的持久化缓存方案]( https://github.com/pigcan/blog/issues/9 )
 
 ### path
 
@@ -411,6 +431,42 @@ loader只能用于转换模块,插件可以处理`整个编译生命周期`中�
 
 ​		babel-loader支持`.babelrc`文件读取到Babel配置,可以将`presets`和`plugins`从webpack配置文件`提取`出来,也能达到`相同的效果`
 
+### sass-loader
+
+​		`Sass`两种语法,现在,现在使用更多的是`SCSS`,所以在安装和配置loader的时都是sass-loader,而实际的文件后缀是`.scss`
+
+​		`sass-loader`就是将scss编译为css,`sass-loader`相当于核心库与webpack的连接器(类似babel-loader),`node-sass`是核心库用来编译scss
+
+​		游览器`调试源码`需要分别在sass-loader和css-loader单独添加`source map`的配置项
+
+```js
+module:{
+	rules:[
+		test:/\/scss/,
+		use:[
+			'style-loader',
+			{
+				loader:'css-loader',
+				options:{
+					sourceMap:true
+				}
+			},
+			{
+				loader:'sass-loader',
+				options:{
+					sourceMap:true
+				}
+			}
+		]
+		
+	]
+}
+```
+
+
+
+
+
 
 
 ## 插件  (plugins)
@@ -425,12 +481,154 @@ loader只能用于转换模块,插件可以处理`整个编译生命周期`中�
 
 ### 常用插件
 
+> 主要是`JS`和`CSS`,包含`提取`,`压缩`,`去除无用代码`
+>
+> html
+>
+> - JS插入html中: html-webpack-plugin
+>
+> CSS
+>
+> - 提取: mini-css-extract-plugiin 
+> - 压缩: optimize-css-assets-webpack-plugin  `内置`
+> - 去除未使用的选择器 : purifycss-webpack
+>
+> JS
+>
+> - 提取: 内置  entry
+> - 压缩: 内置  terser-webpack-plugin
+> - 去除死代码  : terser-webpack-plugin
+
+#### CSS
+
+> 提示
+>
+> 请只在生产环境下使用 CSS 提取，这将便于你在开发环境下进行热重载。
+
+ 设置`optimization.minimizer`会覆盖webpack提供的默认设置，确保还指定JS压缩器： 
+
+```js
+const TerserJSPlugin = require("terser-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+module.exports = {
+  optimization: {
+    minimizer: [
+      new TerserJSPlugin({}),
+      new OptimizeCSSAssetsPlugin({})
+    ]
+  }
+}
+
+```
+
+
+
 - extract-text-webpack-plugin
   专门用于提取样式到CSS文件的,将样式存在css文件中而不是style标签中,`利于客户端进行缓存`
 
 - mini-css-extract-plugiin
 
   `extract-text-webpack-plugin`升级版,Webpack4启用,支持`按需加载`
+  
+   需要注意的是 `MiniCssExtractPlugin.loader` 和 `style-loader` 由于某种原因不能共存。 
+
+#### extract 和 mini区别
+
+1. `优点:` 
+
+- 异步加载
+-  不重复编译，性能更好 
+- loader规则设置的形式不同,并且` mini-css-extract-plugiin`支持配置`publicPath`,用来指定异步CSS的加载路径
+- 在`plugins`设置中,除了指定同步加载的CSS资源名(`filename`),还要指定异步加载CSS资源名(`chunkFilename`)
+- 不需要设置`fallback`
+
+2. `缺点:`
+   - `不支持CSS热更新,开发环境引入`css-hot-loader`以便支持css热更新
+
+#### 压缩CSS和JS
+
+​		weebpack4 内置CSS压缩和JS压缩
+
+ 虽然webpack 5可能内置了CSS最小化器，但是对于webpack 4，您需要自带。要缩小输出，请使用诸如[optimize-css-assets-webpack-plugin之类的插件](https://github.com/NMFR/optimize-css-assets-webpack-plugin)。设置`optimization.minimizer`会覆盖webpack提供的默认设置，因此请确保还指定JS最小化器： 
+
+```
+
+```
+
+
+
+#### SplitChunks
+
+```js
+#默认配置
+module.exports = {
+  //...
+  optimization: {
+    splitChunks: {
+      chunks: 'async', //从哪些chunks里面抽取代码，除了三个可选字符串值 initial、async、all 之外，还可以通过函数来过滤所需的 chunks
+      minSize: 30000, //抽取出来的文件在压缩前的最小大小
+      maxSize: 0,  //抽取出来的文件在压缩前的最大大小,默认为 0，表示不限制最大大小
+      minChunks: 1,  //被引用次数
+      maxAsyncRequests: 5,  //最大的按需(异步)加载次数
+      maxInitialRequests: 3,  //最大的初始化加载次数
+      automaticNameDelimiter: '~',  //抽取出来的文件的自动生成名字的分割符
+      name: true,  //抽取出来文件的名字，默认为 true，表示自动生成文件名
+# cacheGroups 缓存策略   关键配置
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10  //权重
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  }
+};
+```
+
+****
+
+chunks
+
+​		有三个可选值,
+
+- `async(默认):` 只提取异chunk
+- `initial:`  只对入口的chunk有效(如果配置了inital则上面异步的例子将失效)
+- `all:`  两种模式同事开启
+
+**cacheGroups`**
+
+​		上面的那么多参数，其实都可以不用管，cacheGroups 才是我们配置的关键。它可以继承/覆盖上面 `splitChunks` 中所有的参数值，除此之外还额外提供了三个配置，分别为：`test`, `priority` 和 `reuseExistingChunk`。
+
+- test: 表示要过滤 modules，默认为`所有的 modules`，可匹配模块路径或 chunk 名字，当匹配的是 chunk 名字的时候，其里面的所有 modules 都会选中；
+- priority：表示抽取权重，数字越大表示优先级越高。因为一个 module 可能会满足多个 cacheGroups 的条件，那么抽取到哪个就由权重最高的说了算；
+- reuseExistingChunk：表示是否使用已有的 chunk，如果为 true 则表示如果当前的 chunk 包含的模块已经被抽取出去了，那么将不会重新生成新的`没有默认值(未证实)`。
+
+####  terser-webpack-plugin 
+
+​		压缩JS工具,减小包的体积,提升加载效率,通常配置在生产环境
+
+- 之前
+
+​		` uglifyjs-webpack-plugin `不支持ES6语法,ES6需求需要配合babel进行转义
+
+​		webpack在`4.26.0`将默认压缩插件从	` uglifyjs-webpack-plugin `改成` terser-webpack-plugin `,
+
+​		**原因:** `uglifyjs-webpack-plugin` 使用的` uglify-es `已经`不再被维护`，取而代之的是一个名为 terser 的分支。所以 webpack 官方放弃了使用 uglifyjs-webpack-plugin，建议使用 terser-webpack-plugin。 
+
+### 补充知识
+
+#### 热更新相关
+
+- [[webpack 热加载原理探索]]( http://shepherdwind.com/2017/02/07/webpack-hmr-principle/ )
+
+- [[webpack之输出]](  https://juejin.im/post/5ce4ab2c5188252b79423b05 )
+
+  
 
 ## 模式 (mode)
 
@@ -565,6 +763,39 @@ module.exports = {
 >
 > 主要工作就是接收游览器请求,然后将资源返回,`启动服务`的时候会让webpack进行模块化打包并将资源准备好,`webpack-dev-server`接收到游览器的资源请求时,首先进行`URL地址校验`,如果地址为资源服务地址(`publicPath`),就会从webpack的打包结果中寻找该资源并返回给游览器.如果`不属于`资源服务地址,则直接读取硬盘中的源文件并将其返回
 
-## vendor
+## source map
 
-webpack中vendor一般指工程所使用的库,框架等第三方模块集中打包产生的bundle
+​		source map 是指将`编译` 、`打包` 、`压缩`后的代码`映射`会源代码的`过程`
+
+​		webpack在编译过程中,如果我们启用了`devtool`,source map就会跟随源代码被传递,最后生成`.map`文件
+
+​		调试代码时,会加载对应的`.map`文件找到对应的源代码
+
+- 安全问题
+
+  不打开开发者工具不会加载,任何人都能看到
+
+  webpack提供了两种hidden-source-map和nosources-source-map来提升source map的安全性
+
+- hidden-source-map
+
+  产出完成的map文件,但是不会在bundle文件中添加对于map文件的引用,开发者工具中看不到map文件,需要`第三方服务`将map文件上传到上面,`Sentry(错误跟踪平台)`能实现
+
+- nosources-source-map
+
+  文件被隐藏,可以在控制台中查看报错信息
+
+- nginx设置白名单
+
+  将`.map文件只对白名单开放`
+
+
+
+| 名称                         | 说明                                         |      |
+| ---------------------------- | -------------------------------------------- | ---- |
+| source map                   | 大和全,单独文件,显示行和列                   |      |
+| eval-source-map              | 不会产生单独文件,显示行和列                  |      |
+| cheap-module-source-map      | 不会产生列,单独文件,可以保留                 |      |
+| cheap-module-eval-source-map | 不会产生文件,集成在打包后的文件中,不会产生列 |      |
+
+ ![img](https://user-gold-cdn.xitu.io/2019/7/24/16c21c32ae73d7c0?imageView2/0/w/1280/h/960/format/webp/ignore-error/1) 
