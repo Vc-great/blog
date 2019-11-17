@@ -549,10 +549,7 @@ loader只能用于转换模块,插件可以处理`整个编译生命周期`中�
 >
 > - 提取: 内置  entry
 > - 压缩: 内置  terser-webpack-plugin
-> - 去除死代码(`tree-shaking`)  : 内置 terser-webpack-plugin
->   - import 在生产环境下会自动去除没用的代码
->   - `require`导入的`不支持`去除
->   - scope hosting 作用域提示 在webpack中 简化代码
+> - tree-shaking  : 内置 terser-webpack-plugin
 
 #### CSS
 
@@ -854,3 +851,88 @@ module.exports = {
 | cheap-module-eval-source-map | 不会产生文件,集成在打包后的文件中,不会产生列 |      |
 
  ![img](https://user-gold-cdn.xitu.io/2019/7/24/16c21c32ae73d7c0?imageView2/0/w/1280/h/960/format/webp/ignore-error/1) 
+
+##  sideEffects 
+
+ `sideEffects` 是说模块内有没有立即执行的代码, 此类代码通常会产生副作用 
+
+```js
+// a.js 文件
+
+// 副作用, 在 import a 时发生
+document.body.appendChild(document.createElement('div')); 
+
+// 导出的模块
+export default function foo() {};
+#摇树后  去除了export d但是副作用代码被保留了下来
+document.body.appendChild(document.createElement('div')); 
+
+```
+
+ 通过 `sideEffects` 标记, 可以通知 `webpack` 使用一种更简便高效的方式来实现代码裁剪. 
+
+ 如果我们引入的 包/模块 被标记为 `sideEffects: false` 了，那么不管它是否真的有副作用，只要它没有被引用到，整个 模块/包 都会被完整的移除 
+
+[Webpack 中的 sideEffects 到底该怎么用]( https://zhuanlan.zhihu.com/p/40052192 )
+
+## tree-shaking
+
+> 打包过程中检测工程没有被引用过的模块,webpack会对其进行标记,在压缩时将他们从最终的bundle中去掉
+
+**前提**
+
+  1. 只能对ES6 Module 生效 (`require`导入的`不支持`去除 )
+
+  2.  工程中使用了`babel-loader`,一定要禁用他的模块依赖解析.因为如果有`babel-looader`来做依赖解析,webpack接收到的就都是转化过的`CommonJS`形式的模块
+
+     ```js
+     #.babelrc 
+     "presets": [
+         ["@babel/preset-env",{
+           "modules": false
+         }]
+       ],
+     ```
+
+     
+
+**使用压缩工具去除死代码**
+
+​		webpack将mode设置为`production`启用`terser-webpack-plugin`去除死代码
+
+```js
+# 摇树前
+// a.js
+export function a() {}
+// b.js
+export function b(){}
+// package/index.js
+import a from './a'
+import b from './b'
+export { a, b }
+// app.js
+import {a} from 'package'
+console.log(a)
+
+```
+
+```js
+#摇树后
+// a.js
+export function a() {}
+// b.js 不再导出 function b(){}
+function b() {}
+// package/index.js 不再导出 b 模块
+import a from './a'
+import './b'
+export { a }  --------	//b 模块的痕迹会被完全抹杀掉
+
+// app.js
+import {a} from 'package'
+console.log(a)
+
+```
+
+## scope hosting
+
+​		 作用域提示, 在webpack中 简化代码
