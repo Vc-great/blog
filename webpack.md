@@ -68,7 +68,7 @@
 
       
 
-  - ES6  `import()`
+  - ES6 Module 
     
     1. 优点:
     
@@ -82,9 +82,24 @@
        - 不再需要对象作为命名空间（比如Math对象），未来这些功能可以通过模块提供
 
   - commonJS 和  ES6
+
     1. commonJS是`动态加载(运行阶段)`,ES6是`静态加载(编译阶段)`
     2. commonJS是值的`拷贝`,ES6是值的`映射`
     3. ES 6 Module 更好的支持`循环依赖`
+
+  - UMD
+
+    严格讲UMD不是模块标准,它是一组模块(`AMD`和`CommonJS`
+
+    )形式的集合
+
+    `目标`是一个模块能运行在各种环境下
+
+    先判断`AMD`环境, `AMD`模块`无法`使用`CommonJS`和`ES6 Module`
+
+    场景:
+
+    ​		webpack同时支持AMD和CommonJS,当UMD发现当前有AMD环境时会使用AMD方式导出,这会使得模块导入出错,可以更改UMD模块的`判断顺序`,使其以CommonJS的形式导出
 
 - 打包工具
 
@@ -936,3 +951,5 @@ console.log(a)
 ## scope hosting
 
 ​		 作用域提示, 在webpack中 简化代码
+
+​		 webpack4 production mode会自动开启ModuleConcatenationPlugin，实现作用域提升
