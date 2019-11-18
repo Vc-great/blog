@@ -359,7 +359,7 @@ console.log(Object.is(5, "5"));     // false
 
     - 选择性定义默认值,属性不存在时使用该值 
       `对应属性缺失` 或`undefined`,`变量为null不会赋值默认值`
-
+    
       ```js
       let node = {
               type: "Identifier",
@@ -556,3 +556,202 @@ function setCookie(name, value, { secure, path, domain, expires } = {}) {
 }
 ```
 
+## 符号
+
+## set与map	
+
+### Object
+
+- key不会区分`数值`和`字符串`,`数值类型`的key会在内部转换为`字符串`,因此`obj['5']`和`obj[5]`引用的是同一个属性
+
+- `对象的`key不能是`对象`,只能是`字符串`,`key1`和`key2`会被转换为字符串`"[objcet object]"`,`key1`和`key2`被转换为同一个字符串,所以打印的value是`同一个值`
+
+  ```js
+  let obj = {},
+  key1 = {},
+  key2 = {};
+  obj[key1] = 'str'
+  console.log(obj[key2])  //str
+  ```
+
+### 为什么新增set与map
+
+- in运算符
+
+  若属性存在返回`true`而无需读取对象的属性值,但是`in`会查找原型,使得在处理原型为`null`的对象时才是`安全的`
+
+  ```js
+  #a实例上没有name属性,in会向原型进行查找
+  class fn{
+  	constructor(){
+  		this.name = 1
+  	}
+  }
+  let a = new fn()
+  console.log('name' in a ) //true
+  ```
+
+- 判断
+
+```js
+let obj = {};
+obj.count = 1
+//是想检查count属性是否存在,还是向检查非零值
+if	(obj.count){
+//...
+}
+
+```
+
+
+
+### Set
+
+> 无重复值的有序列表,Set允许对它包含的数据进行快速访问,从而增加了一个追踪离散值的更有效的方式
+>
+> Set构造器可以接收`任意`可迭代`对象`作为参数,能用数组是因为他们默认就是可迭代的	
+>
+> `场景`检查某个值是否存在
+
+**Set特点**
+
+1. Set不会使用强制类型转换来判断值是否重复,可以`5`和`'5'`共存(数值`5`和,字符串`"5"`)
+
+2. Set内部使用object.is()判断两个值是否相等,唯一的例外`+0`和`-0`在Set中被判断为`相等`
+
+   ```js
+   # ===比较
+   -0 === 0  //true
+   #Object.is() 比较
+   Object.is(-0,0) // false
+   # new Set() 判断
+   let a = new Set()
+   a.add(-0)    //Set(1) {0}
+   a.add(0)    //Set(1) {0}
+   ```
+
+3. 由于不会强制类型转换为字符串,所以可以向Set添加对象,不会被合并
+
+4. 多次执行`add()`方法,不会重复添加数据,第一次之后再调用会被忽略掉
+
+**方法**
+
+```js
+let set = new Set()
+set.add(5)  //添加
+set.has(5)   //测试某个值是否存在
+set.delete(5) //移除
+set.clear()  //移除所有的值
+set.for
+```
+
+**forEach**
+
+​		与数组类似,接收三个参数,使用方法与数组相同,回调函数使用this,可以给forEach传递this作为第二个参数
+
+**forEach参数**
+
+1. Set中下个位置的值
+2. 与第一个参数相同的值
+3. 目标Set自身
+
+**第一个和第二个参数为什么是相同的**
+
+​	数组和Map都会给回调函数传递三个参数,前两个参数分别是`下个位置的值`和`键(数组使用的键是索引)`
+
+​	Set没有键,为了保持参数相同,将Set中的每一项同时认定为`键`与`值`,这样Set前两个参数就相同了,与数组和Map的forEach保持一致了
+
+```js
+Set(5) {1, 2, 3, 4, "a"}
+[[Entries]]
+0: 1
+1: 2
+2: 3		//键		
+value: 3    //值
+3: 4
+value: 4
+4: "a"			//键
+value: "a"		//值
+size: 5
+__proto__: Set
+```
+
+**Set转换为数组**
+
+```js
+#去重 转为数组
+let set = new Set([1,2,3,4,1,2,3]),
+ary = [...set];
+console.log(ary)   [1, 2, 3, 4]
+
+```
+
+**应用**
+
+- `去重:`利用不会重复添加的特性,可以用来初始化数组
+
+  ```js
+  let set = new Set([1,2,3,4,1,2])
+  console.log(set) // Set(4) {1, 2, 3, 4}
+  ```
+
+- `判断`使用`has()`判断某个值是否存在
+
+**Weak Set**
+
+​		只要对于Set实例的引用仍然存在,所储存的对象就`无法`被垃圾回收机制回收,从而无法释放内存
+
+​		该类型只允许储存`对象`的`弱引用`,而`不能`储存基本类型的`值`,对象的弱引用在它自己称为该对象的`唯一`引用时,不会阻止垃圾回收
+
+```js
+#Set 
+let set = new Set();
+let key = {};
+
+set.add(key)
+
+ console.log(set.size) //1
+//取消原始引用
+key =  null;
+//但是另一份引用仍然存在与set内部
+console.log(set.size) //1     
+```
+
+​		使用方法与Set类似,都有`add`,`has`,`delete`方法
+
+​		Weak Set和Set最大的`区别`是对象的`弱引用`
+
+```js
+#WeakSet
+let set = new WeakSet();
+let key = {};
+
+set.add(key)
+
+ console.log(set.has(key)) //true
+//移除对于键的最后一个引用,同时从Weak Set中移除
+key =  null;
+```
+
+​		代码执行到key = null后,WeakSet中的key引用就不能再访问了,不可能核实这一点,因为需要把对于该对象的一个引用传递给has()方法,而只要存在其他引用,WeakSet内部的弱引用就不会消失
+
+​	**WeakSet和Set区别**
+
+	1. WeakSet调用add()传入非对象参数,会`报错`,has和delete传入非对象参数返回false
+ 	2. WeakSet不可迭代,所以没有for-of
+ 	3. WeakSet没有forEach方法
+ 	4. WeakSet没有size属性
+ 	5. WeakSet无法暴露出任何迭代器(keys(),value()),因此不能判断WeakSet内容
+
+`WeakSet场景:`
+
+- 正确管理内存
+- 若只想追踪对象的引用,应当使用WeakSet而不是set
+
+​		
+
+### map
+
+> 键与相对应额值的集合
+>
+> `场景`常被用做缓存,储存数据以便此后快速`检索`
