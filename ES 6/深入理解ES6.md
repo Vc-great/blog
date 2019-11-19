@@ -637,12 +637,61 @@ if	(obj.count){
 **方法**
 
 ```js
+#操作方法
 let set = new Set()
 set.add(5)  //添加
 set.has(5)   //测试某个值是否存在
 set.delete(5) //移除
 set.clear()  //移除所有的值
-set.for
+
+
+#遍历方法
+keys()    //所有键的数组
+values()  //所有值的数组
+forEach() //遍历
+entries() // 返回一个包含所有键值对的数组
+
+#entries 没想到什么场景适用
+let a = new Set([1,2,3,4,5,{aa:1}])
+let b = a.entries()
+let  c = Array.from(b)
+//[Array(2), Array(2), Array(2), Array(2), Array(2), Array(2)]
+0: Array(2)
+0: 1
+1: 1
+length: 2
+__proto__: Array(0)
+1: Array(2)
+0: 2
+1: 2
+length: 2
+__proto__: Array(0)
+2: Array(2)
+0: 3
+1: 3
+length: 2
+__proto__: Array(0)
+3: Array(2)
+0: 4
+1: 4
+length: 2
+__proto__: Array(0)
+4: Array(2)
+0: 5
+1: 5
+length: 2
+__proto__: Array(0)
+5: Array(2)
+0:
+aa: 1
+__proto__: Object
+1:
+aa: 1
+__proto__: Object
+length: 2
+__proto__: Array(0)
+length: 6
+__proto__: Array(0)
 ```
 
 **forEach**
@@ -737,7 +786,8 @@ key =  null;
 
 ​	**WeakSet和Set区别**
 
-	1. WeakSet调用add()传入非对象参数,会`报错`,has和delete传入非对象参数返回false
+1. WeakSet调用add()传入非对象参数,会`报错`,has和delete传入非对象参数返回false
+
  	2. WeakSet不可迭代,所以没有for-of
  	3. WeakSet没有forEach方法
  	4. WeakSet没有size属性
