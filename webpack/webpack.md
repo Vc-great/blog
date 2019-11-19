@@ -187,7 +187,7 @@
 
 ​		由chunk得到打包产物叫bundle
 
-![](D:\个人\Blog\webpack.assets\entry-chunk-bundle.png)
+ ![entry-chunk-bundle.png](https://github.com/Vc-great/blog/blob/master/webpack/webpack.assets/entry-chunk-bundle.png?raw=true) 
 
 ## context
 
