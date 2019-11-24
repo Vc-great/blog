@@ -6,7 +6,7 @@
 
 ## 异步
 
-promise
+[Promise](https://github.com/Vc-great/blog/blob/master/异步/promise.md) 
 
 EventLoop
 
