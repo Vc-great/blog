@@ -357,19 +357,21 @@ console.log(Object.is(5, "5"));     // false
       ```
 
 
-    - 选择性定义默认值,属性不存在时使用该值 
-      `对应属性缺失` 或`undefined`,`变量为null不会赋值默认值`
-    
-      ```js
-      let node = {
-              type: "Identifier",
-              name: "foo"
-      }
-      let {type,name,value=true }= node
-      console.log(type);      // "Identifier"
-            console.log(name);      // "foo"
-            console.log(value);     // true
-      ```
+~~~js
+- 选择性定义默认值,属性不存在时使用该值 
+  `对应属性缺失` 或`undefined`,`变量为null不会赋值默认值`
+
+  ```js
+  let node = {
+          type: "Identifier",
+          name: "foo"
+  }
+  let {type,name,value=true }= node
+  console.log(type);      // "Identifier"
+        console.log(name);      // "foo"
+        console.log(value);     // true
+  ```
+~~~
 
 3. 赋值本地不同的变量名
 
@@ -581,14 +583,18 @@ function setCookie(name, value, { secure, path, domain, expires } = {}) {
   若属性存在返回`true`而无需读取对象的属性值,但是`in`会查找原型,使得在处理原型为`null`的对象时才是`安全的`
 
   ```js
-  #a实例上没有name属性,in会向原型进行查找
-  class fn{
-  	constructor(){
-  		this.name = 1
-  	}
+  #,in会向原型进行查找
+  let obj = {
+  	a:1
   }
-  let a = new fn()
-  console.log('name' in a ) //true
+  let a= Object.create(obj)
+  a.b = 2
+  for(let k in a){
+  	console.log(a[k])
+  }
+  //2
+  //1
+  
   ```
 
 - 判断
@@ -832,7 +838,7 @@ map.get('str')  //"string"
 
 **初始化**
 
-1. 接收数组格式,内部每一项页必须是数组,第一项是`键`,第二项是`值`
+1. 接收数组格式,内部每一项也必须是数组,第一项是`键`,第二项是`值`
 2. 键允许为任意数据类型,将键储存在数组中,确保在添加map之前不被强制转换为其他类型的值
 
 ```js
