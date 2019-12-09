@@ -1076,3 +1076,11 @@ webpack4采用`terser-webpackplugin`需要开启parallel参数,生产环境默�
 
 `image-webpack-loader`
 
+### 去除无用的CSS
+
+`purgecss-webpack-plugin`需要和`mini-css-extract-plugin`配合使用
+
+### 动态polyfill
+
+![动态polyfill](D:\个人\Blog\webpack\webpack.assets\动态polyfill.png)
+
