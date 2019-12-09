@@ -177,6 +177,20 @@
   3. 可以处理各种类型的资源,样式 、模版 、图片等
   4. 周边生态好,大部分需求都有解决方案
 
+## 管道符号
+
+webpack默认入口文件为 webpack.config.js
+
+手动设置需要在package.js中script 对应命令增加 `--config`设置入口文件
+
+```js
+  "scripts": {
+    "dev": " webpack-dev-server --config build/webpack.dev.conf.js",
+  }
+```
+
+
+
 ## entry chunk bundle
 
 ### chunk
@@ -217,7 +231,7 @@ module.exports = {
 
 ## 入口 (Entry)
 
-> 默认值为  `./src`
+> 默认值为  `./src/index.js`
 
 ### 类型
 
@@ -272,11 +286,15 @@ module.exports = {
 
 ## 出口 (output)
 
-> 　 默认值为 `./dist` 
+> 　 默认值为 `./dist/main.js` 
+
+### 单入口
+
+单入口文件可以将出口的`filename`写死
 
 ### 　多入口
 
-多入口或配置创建多个`chunk`,需要确保每个文件具有唯一的名称
+多入口或配置创建多个`chunk`,需要确保每个文件具有唯一的名称`[name]`
 
 
 
@@ -341,9 +359,12 @@ chunkFilename:'[name]@[chunkhash].js'
 ### hash 、chunkhash 、 contenthash 
 
 - hash : 编译的时候生成的hash有文件修改,就会编译一下创建新的hash,每当代码发送变化时响应的hash也会变化
-- chunkhash :  根据chunk生成的hash值,每个chunk单独计算依次hash
 
-- contenthash :   contenthash可以解决的是，css模块修改后，js哈希值变动的问题。 contenthash并不能解决moduleId自增的问题
+- chunkhash :  根据chunk生成的hash值,每个chunk单独计算依次hash,不同的`entry`会生成不同的`chunkhash`,JS一般采用`chunkhash`
+
+- contenthash :   contenthash可以解决的是，js模块修改后，css哈希值变动的问题。
+
+  ( contenthash并不能解决moduleId自增的问题 ) 
 
 ### 持久化缓存方案        `需实践`
 
@@ -394,6 +415,20 @@ publucPath:'//cdn.com/assets'   //     //cdn.com/assets/1.js
 `webpack-dev-server`的配置中也有一个`publicPath`,值得注意的是,这个publicPath与`webpack`的配置项含义`不同`,它的作用是`指定`webpack-dev-server的`静态资源服务路径`
 
 建议`webpack-dev-server`的publicPath与webpack中的output.path`保持一致`,这样在任何环境下资源的输出的目录都是相同的
+
+## 文件指纹hash 、chunkhash 、 contenthash 
+
+- hash : 编译的时候生成的hash有文件修改,就会编译一下创建新的hash,每当代码发送变化时响应的hash也会变化
+
+- chunkhash :  根据chunk生成的hash值,每个chunk单独计算依次hash,不同的`entry`会生成不同的`chunkhash`,JS一般采用`chunkhash`
+
+- contenthash :   contenthash可以解决的是，页面中js模块修改后，css哈希值变动的问题。CSS一般采用`contenthash`
+
+  ( contenthash并不能解决moduleId自增的问题 ) 
+
+图片:使用`hash`
+
+![img-hash](D:\个人\Blog\webpack\webpack.assets\img-hash.png)
 
 ## Moudule
 
@@ -478,11 +513,16 @@ loader只能用于转换模块,插件可以处理`整个编译生命周期`中�
 - [`less-loader`](https://webpack.docschina.org/loaders/less-loader) 加载和转译 LESS 文件
 - [`sass-loader`](https://webpack.docschina.org/loaders/sass-loader) 加载和转译 SASS/SCSS 文件
 - [`postcss-loader`](https://webpack.docschina.org/loaders/postcss-loader) 使用 [PostCSS](http://postcss.org/) 加载和转译 CSS/SSS 文件
--  [`vue-loader`](https://github.com/vuejs/vue-loader) 加载和转译 [Vue 组件](https://vuejs.org/v2/guide/components.html) 
--  `file-loader`打包文件类型的资源,并返回其`publicPath`
--  `url-loader:`与`file-loader`唯一不同在于用户可以设置一个文件大小的阈值(`limit`),当大于该阈值时与`file-loader`一样返回`publicPath`而小于该阈值时则返回文件`base64`形式编码
+
+​					(`postcss`支持变量和混入（mixin），增加浏览器相关的声明前缀，或是把使用将来的 CSS 规范的样式规则转译（transpile）成当前的 CSS 规范支持的格式) 
+
+- [`vue-loader`](https://github.com/vuejs/vue-loader) 加载和转译 [Vue 组件](https://vuejs.org/v2/guide/components.html) 
+- `file-loader`打包文件类型的资源,并返回其`publicPath`
+-  `url-loader:`与`file-loader`唯一不同在于用户可以设置一个文件大小的阈值(`limit`),当大于该阈值时与`file-loader`一样返回`publicPath`而小于该阈值时则返回文件`base64`形式编码,内联进`html`中,减少网络请求
 
 ## 常用loader
+
+![often-loader](D:\个人\Blog\webpack\webpack.assets\often-loader.png)
 
 ### babel-loader
 
@@ -548,16 +588,18 @@ loader只能用于转换模块,插件可以处理`整个编译生命周期`中�
 
 ### 常用插件
 
+![ofen-pubins](D:\个人\Blog\webpack\webpack.assets\ofen-pubins.png)
+
 > 主要是`JS`和`CSS`,包含`提取`,`压缩`,`去除无用代码`
 >
 > html
 >
-> - JS插入html中: html-webpack-plugin
+> - JS插入html中: html-webpack-plugin  `minify设置压缩参数`
 >
 > CSS
 >
 > - 提取: mini-css-extract-plugiin 
-> - 压缩: optimize-css-assets-webpack-plugin  `内置`
+> - 压缩: optimize-css-assets-webpack-plugin  `用于优化\最小化CSS的CSS处理器，默认为[cssnano]` 
 > - 去除未使用的选择器 : purifycss-webpack
 >
 > JS
@@ -699,6 +741,8 @@ chunks
 
 ## 模式 (mode)
 
+![Mode](D:\个人\Blog\webpack\webpack.assets\Mode.png)
+
 > 设置mode配置名称,webpack会启用内置优化
 >
 > `默认:`production
@@ -751,6 +795,8 @@ module.exports = {
 ###  production 
 
 >  会将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `production`。启用 `FlagDependencyUsagePlugin`, `FlagIncludedChunksPlugin`, `ModuleConcatenationPlugin`, `NoEmitOnErrorsPlugin`, `OccurrenceOrderPlugin`, `SideEffectsFlagPlugin` 和 `TerserPlugin`  　　
+
+ModuleConcatenationPlugin : `scope hoisting` 减少函数声明代码和内存开销
 
 ```js
 // webpack.production.config.js
@@ -832,6 +878,12 @@ module.exports = {
 
 ## source map
 
+![source-map](D:\个人\Blog\webpack\webpack.assets\source-map.png)
+
+​		`eval`代码块的最后添加source map的url,指定对应的文件
+
+
+
 ​		source map 是指将`编译` 、`打包` 、`压缩`后的代码`映射`会源代码的`过程`
 
 ​		webpack在编译过程中,如果我们启用了`devtool`,source map就会跟随源代码被传递,最后生成`.map`文件
@@ -900,16 +952,22 @@ document.body.appendChild(document.createElement('div'));
 
   2.  工程中使用了`babel-loader`,一定要禁用他的模块依赖解析.因为如果有`babel-looader`来做依赖解析,webpack接收到的就都是转化过的`CommonJS`形式的模块
 
+     `测试发现modules不设置为false 也可以进行tree shaking, 不知是否与版本或其他因素有关`
+     
      ```js
      #.babelrc 
      "presets": [
          ["@babel/preset-env",{
            "modules": false
          }]
-       ],
+  ],
      ```
 
-     
+**DCE(Elimination)**
+
+- 代码不会被执行,不可到达 `if(false){}`
+- 代码执行的结果不会被用到
+- 代码只会影响死变量(只写不读)
 
 **使用压缩工具去除死代码**
 
@@ -948,8 +1006,73 @@ console.log(a)
 
 ```
 
+### 知识补充
+
+[Tree-Shaking性能优化实践 - 原理篇](https://juejin.im/post/5a4dc842518825698e7279a9)
+
+[你的Tree-Shaking并没什么卵用](https://juejin.im/post/5a5652d8f265da3e497ff3de)
+
 ## scope hosting
 
 ​		 作用域提示, 在webpack中 简化代码
 
 ​		 webpack4 production mode会自动开启ModuleConcatenationPlugin，实现作用域提升
+
+## 热更新原理
+
+![hot](D:\个人\Blog\webpack\webpack.assets\hot.png)
+
+Bundle server: 以服务器的方式进行访问 如:`localhost:8080/bundle.js`
+
+启动路径: 1-2-A-B
+
+更新路径:1-2-3-4-5
+
+## 分析
+
+### 速度
+
+### 体积
+
+## 优化
+
+### 多进程/多实例
+
+happyPack 维护越来月少,webpack4内置thead-loader,可以替换happyPack
+
+**原理:**thead-loader原理与happyPack类似,每次`webpack`解析一个模块,thead-loader会将它及它的依赖分配给`worker`线程中,达到多进程目的
+
+### 并行压缩
+
+webpack4采用`terser-webpackplugin`需要开启parallel参数,生产环境默认为`false`
+
+### 预编译资源模块 DLLPlugin
+
+使用DLLPlugin进行分包,DllReferencePlugin对manifest.json引用
+
+### 缓存
+
+提升二次构建速度
+
+1. `babel-loader`开启缓存
+
+   ```js
+   cacheDirectory: true
+   ```
+
+2. `terser-webpack-plugin`开启缓存
+
+3. 使用`cache-loader`或者`hard-source-webpack-plugin`
+
+### 缩小构建目标
+
+减少文件的搜索范围
+
+1. 减少模块搜索层级  优化resolve.modules
+2. 指定入口文件    优化resolve.mainFields
+3. 减少查找范围    优化resolve.extensions `webpack只支持js和json的读取`  
+
+### 图片压缩
+
+`image-webpack-loader`
+
