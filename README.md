@@ -14,3 +14,9 @@ EventLoop
 
 [webpack4](https://github.com/Vc-great/blog/blob/master/webpack/webpack.md)
 
+## Vue
+
+1. 变化侦测
+2. 生命周期
+3. 路由
+4. Vuex

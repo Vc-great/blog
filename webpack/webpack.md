@@ -1048,7 +1048,7 @@ webpack4采用`terser-webpackplugin`需要开启parallel参数,生产环境默�
 
 ### 预编译资源模块 DLLPlugin
 
-使用DLLPlugin进行分包,DllReferencePlugin对manifest.json引用
+​	`理解:`使用`DLLPlugin`提前进行打包,正式打包时`DllReferencePlugin`读取`manifest`告诉`webpack`哪些已经打包好了不用在进行编译,从而减少打包时间
 
 ### 缓存
 
@@ -1083,4 +1083,3 @@ webpack4采用`terser-webpackplugin`需要开启parallel参数,生产环境默�
 ### 动态polyfill
 
 ![动态polyfill](D:\个人\Blog\webpack\webpack.assets\动态polyfill.png)
-

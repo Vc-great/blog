@@ -877,3 +877,172 @@ Map(2) {"name" => "nihao", "age" => "18"}
 - entrises 包含键与值
 - keys 包含键
 - values 包含值
+
+## import export
+
+1. export
+
+   >  `export`语句输出的接口，与其对应的值是动态绑定关系，即通过该接口，可以取到模块内部实时的值。 
+
+### 最佳实践
+
+> `export:` 导入 导出 都需要加`括号`
+>
+> `export default:` 导入 导出 `不`加括号
+
+|          |                       export                       |                     export default                     | 备注                              |
+| :------: | :------------------------------------------------: | :----------------------------------------------------: | --------------------------------- |
+|    值    |                   export var a=1                   | var a = 1 export default a<br />export default 1<br /> | `default不能接var`                |
+|   函数   |                   export func a                    |                  export default func                   |                                   |
+|          |         function f() {}<br /> export {f};          |            func aa{}<br />export default aa            |                                   |
+|  class   |                  export class bb                   |           class aaa<br />export default  aaa           |                                   |
+|          |                                                    |                export default class aaa                |                                   |
+| 统一导出 | var a<br />func b<br />class c<br />export {a,b,c} |              声明 a<br />export default a              |                                   |
+|          |                                                    |                                                        |                                   |
+|  import  |                  import { a,b,c}                   |                  import 自定义变量名                   | `export导出`必须有`括号`          |
+|          |                 import * any from                  |                                                        | `export导出的`合并为一个`对象any` |
+|    as    |                       a as b                       |                                                        | `用b代替a`                        |
+
+
+
+- 导出`值`,`函数`,`class`类型
+
+  > 应该优先考虑使用这种写法。因为这样就可以在脚本尾部，一眼看清楚输出了哪些变量。
+
+  ```js
+  #值
+  var a = 1;
+  var c = 1;
+  #函数
+  export function f() {
+  };
+  #class
+  class aaa {
+      constructor() {
+          this.aa = 1
+      }
+  }
+  #导出
+  export {
+      a,
+      c,
+      f,
+      aaa
+  };
+  
+  //改变导出名称  从出口修改  用b 替换a 导出b
+  export {
+      a as b,
+      c,
+  };
+  
+  import {b, c} from './2.js'
+  ```
+
+- 默认导出 `export default`
+
+  >  为了给用户提供方便，让他们不用阅读文档就能加载模块，就要用到`export default`命令，为模块指定默认输出。 
+  >
+  >  - 默认输出
+  >  - 其他模块加载该模块时，`import`命令可以为该匿名函数指定`任意名字`
+  >  - `import`命令后面，`不`使用`大括号` 
+  >  - `export default`命令只能使用`一次 `
+  >  - `export default`命令的本质是将后面的值，赋给`default`变量，所以可以直接将一个值写在`export default`之后 --------`第二种写法 导出值`
+
+  ```js
+  #第一种写法   不用写名字
+  export default function () {
+    console.log('foo');
+  }
+  
+  import customName from './export-default';
+  customName(); // 'foo'
+  
+  //导出class  默认导出写名字
+  export default class{
+      
+  }
+  
+  #第二种写法
+  function foo() {
+    console.log('foo');
+  }
+  
+  export default foo
+  
+  
+  #第二种写法  导出值
+  var a = 1;
+  export default a;
+  
+  
+  ```
+
+- 混合写法
+
+  > 正常写
+
+  ```js
+  class cc {
+  
+  }
+  export var a =1
+  export default cc
+  
+  import cc, { a } from './2.js';
+  ```
+
+- 模块重定向 
+
+  - 第一种  export { foo, bar } from 'my_module';
+
+  >  写成一行以后，`foo`和`bar`实际上并没有被导入当前模块，只是相当于对外转发了这两个接口，导致当前模块不能直接使用`foo`和`bar`。 
+
+  - `第二种`  export * from './1'   导出 export   不能导出export default
+  - `第三种`  export {default} from './2'    默认导出
+
+  ```js
+  #第一种
+  export { foo, bar } from 'my_module';
+  
+  // 可以简单理解为
+  import { foo, bar } from 'my_module';
+  export { foo, bar };
+  #第二种
+  //1.js
+  export var b =1
+  export var a =22
+  //2.js
+  export * from './1'   //导出 export   不能导出export default
+  //导入
+  import {a,b} from './2.js'
+  #混用
+  //1.js
+  export var b =1
+  export var a =22
+  class cc {}
+  export default cc
+  //2.js
+  export * from './2'
+  export {default} from './2'
+  //导入
+  import cc,{b,a} from './1.js'
+  ```
+
+- import * as
+
+  > import * as xxx from ‘xxx’
+  >
+  > 会将若干`export导出的`内容组合成一个对象返回；
+
+  ```js
+  //1.js
+  export var b =1
+  export var a =22
+  //导入
+   import * as aaa from './1.js'
+    aaa.a   //22
+  ```
+
+  
+
