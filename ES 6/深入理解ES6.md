@@ -306,8 +306,13 @@ console.log(Object.is(5, "5"));     // false
 
 - 通用
   1. 未声明过的变量需要声明,声明过的`最外层`需要加`()`
+  
+   ```js
+     ({ type, name } = node); //必须加括号
+   ```
+  
   2. 右侧可以设置默认值 `let { loc: { start }} = {}; `
-
+  
 - 对象
 
 1. `:`修改变量名  左侧是解构出来的值  右侧是`自己想改成的变量名`
@@ -351,17 +356,17 @@ console.log(Object.is(5, "5"));     // false
       }
       let {type,name,value }= node
       console.log(type);      // "Identifier"
-            console.log(name);      // "foo"
-            console.log(value);     // undefined
+      console.log(name);      // "foo"
+      console.log(value);     // undefined
       
       ```
+    
+    - 选择性定义默认值,属性不存在时使用该值 
+    
+      > 对应属性  `缺失` 或`undefined`, 变量为`null`不会赋值默认值
 
 
 ~~~js
-- 选择性定义默认值,属性不存在时使用该值 
-  `对应属性缺失` 或`undefined`,`变量为null不会赋值默认值`
-
-  ```js
   let node = {
           type: "Identifier",
           name: "foo"
@@ -370,7 +375,6 @@ console.log(Object.is(5, "5"));     // false
   console.log(type);      // "Identifier"
         console.log(name);      // "foo"
         console.log(value);     // true
-  ```
 ~~~
 
 3. 赋值本地不同的变量名
