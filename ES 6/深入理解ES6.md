@@ -1012,11 +1012,18 @@ Map(2) {"name" => "nihao", "age" => "18"}
   // 可以简单理解为
   import { foo, bar } from 'my_module';
   export { foo, bar };
+  
+  #重命名导出
+  import { foo } from 'my_module';
+  export { foo as foo2 } from 'my_module';
+  
+  
   #第二种
   //1.js
   export var b =1
   export var a =22
   //2.js
+  #导出 export   不能导出export default
   export * from './1'   //导出 export   不能导出export default
   //导入
   import {a,b} from './2.js'
@@ -1037,16 +1044,131 @@ Map(2) {"name" => "nihao", "age" => "18"}
 
   > import * as xxx from ‘xxx’
   >
-  > 会将若干`export导出的`内容组合成一个对象返回；
+  > 会将若干`export export default导出的`内容组合成一个对象返回；
 
   ```js
+  #1
   //1.js
   export var b =1
   export var a =22
+  export default function sum(){}
+  
   //导入
-   import * as aaa from './1.js'
-    aaa.a   //22
+ import * as aaa from './1.js'
+  console.log（aaa）
+  a: 1
+  b: 2
+  default: ƒ sum()
+  
+  
+  #2
+  export var a =22
+  export default function(){
+  	//...
+  }
+  
+  import sum , {a} from'./1.js'
+  //或
+  import {default as sum,a} from'./1.js'
+  
   ```
-
+  
   
 
+## proxy
+
+​	通过调用`new proxy`创建一个代理用来替代另一个对象,这个代理对目标进行了虚拟,因此该代理与该目标对象表面上可以被当作同一个对象来对待
+
+​	拦截行为使用了一个能够响应特定操作的函数(陷阱函数)
+
+​	11
+
+|        Proxy Trap        |                  Overrides the Behavior Of                   |          Default Behavior          |
+| :----------------------: | :----------------------------------------------------------: | :--------------------------------: |
+|           get            |                         读取一个属性                         |           Reflect.get()            |
+|           set            |                         写入一个属性                         |           Reflect.set()            |
+|           has            |                          in 运算符                           |           Reflect.has()            |
+|      deleteProperty      |                     The delete operator                      |      Reflect.deleteProperty()      |
+|      getPrototypeOf      |                   Object.getPrototypeOf()                    |      Reflect.getPrototypeOf()      |
+|      setPrototypeOf      |                   Object.setPrototypeOf()                    |      Reflect.setPrototypeOf()      |
+|       isExtensible       |                    Object.isExtensible()                     |       Reflect.isExtensible()       |
+|    preventExtensions     |                  Object.preventExtensions()                  |    Reflect.preventExtensions()     |
+| getOwnPropertyDescriptor |              Object.getOwnPropertyDescriptor()               | Reflect.getOwnPropertyDescriptor() |
+|      defineProperty      |                   Object.defineProperty()                    |       Reflect.defineProperty       |
+|         ownKeys          | Object.keys, Object.getOwnPropertyNames(), Object.getOwnPropertySymbols() |         Reflect.ownKeys()          |
+|          apply           |                         调用一个函数                         |          Reflect.apply()           |
+|        construct         |                     使用new 调用一个函数                     |        Reflect.construct()         |
+
+## 增强数组
+
+1. **Array.of**
+
+   解决`new Array`一些怪异行为
+
+   ```js
+   #赋值 单个参数 number 获得数组长度
+   let items = new Array(2);
+   console.log(items.length);          // 2
+   console.log(items[0]);              // undefined
+   console.log(items[1]);              // undefined
+   
+   #赋值 单个参数 string 获得含有string的数组
+   items = new Array("2");
+   console.log(items.length);          // 1
+   console.log(items[0]);              // "2"
+   
+   #多个参数 无论类型 会获得目标数组
+   items = new Array(1, 2);
+   console.log(items.length);          // 2
+   console.log(items[0]);              // 1
+   console.log(items[1]);              // 2
+   
+   items = new Array(3, "2");
+   console.log(items.length);          // 2
+   console.log(items[0]);              // 3
+   console.log(items[1]);              // "2"
+   ```
+
+   `Array.of`总会创建一个包含所有传入参数的数组,不管参数的数量和类型
+
+   ```js
+   let items = Array.of(1, 2);
+   console.log(items.length);          // 2
+   console.log(items[0]);              // 1
+   console.log(items[1]);              // 2
+   
+   items = Array.of(2);
+   console.log(items.length);          // 1
+   console.log(items[0]);              // 2
+   
+   items = Array.of("2");
+   console.log(items.length);          // 1
+   console.log(items[0]);              // "2"
+   ```
+
+   
+
+2. **Array.from**
+
+   解决类数组转数组
+
+   ```js
+   function doSomething(){
+   	let args = Array.from(arguments)
+   	//使用 args
+   }
+   ```
+
+3. **find()与findIndex()**
+
+   检索数组,ES5有`indexOf`与`lastIndexOf()`,但是只能查找特定值,不能查找奇数偶数这类的意图,所以引入了`find()`与`findIndex()`
+
+   `find()`与`findIndex()`均会在第一次返回`true`时停止查找,`find`返回匹配的值,`findIndex`返回匹配位置的索引
+
+4. **fill**
+
+   填充数组,可以指定位置
+
+5. **copyWithin()**
+
+   与`fill`类似,不同的是允许你**在数组内部复制自身元素**
