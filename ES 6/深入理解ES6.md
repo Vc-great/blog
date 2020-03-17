@@ -393,7 +393,7 @@ console.log(Object.is(5, "5"));     // false
    console.log(localName);     // "foo"
    ```
 
-4. 默认值+改变量名
+4. 默认值+改变量名(**别名**)
 
    ```js
    let node = {
