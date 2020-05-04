@@ -21,3 +21,35 @@
 `例如:`登陆认证的WEB页面本身无法进行状态管理,每次跳转新页面,就要在请求报文中附加参数来管理登陆状态
 
 HTTP
+
+## 报文
+
+### content-Type
+
+​	用于知识资源的**MIME**类型,说明请求或返回的消息主题是用何种方式编码,声明数据类型
+
+​	在响应中,`content-Type`表头告诉客户端实例返回的内容的内容类型
+
+​	在请求中,客户端告诉服务器实际发送的数据类型
+
+**application/x-www-form-urlencoded**
+
+​	`post`提交数据方式,提交数据按照`key1=value1&key2=value2`的方式进行编码
+
+```
+const qs = require('qs');
+
+let value = {
+    aa:1,
+    bb:2,
+    cc:3
+}
+let a = qs.stringify(value)
+console.log(a);  //aa=1&bb=2&cc=3
+```
+
+
+
+**application/json**
+
+​	`POST`请求以`JSON`的格式想服务请求发起请求或者请求返回`JSON`格式的响应内容

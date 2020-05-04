@@ -960,7 +960,7 @@ document.body.appendChild(document.createElement('div'));
          ["@babel/preset-env",{
            "modules": false
          }]
-  ],
+    ],
      ```
 
 **DCE(Elimination)**
@@ -1038,7 +1038,7 @@ Bundle server: 以服务器的方式进行访问 如:`localhost:8080/bundle.js`
 
 ### 多进程/多实例
 
-happyPack 维护越来月少,webpack4内置thead-loader,可以替换happyPack
+happyPack 维护越来越少,webpack4内置thead-loader,可以替换happyPack
 
 **原理:**thead-loader原理与happyPack类似,每次`webpack`解析一个模块,thead-loader会将它及它的依赖分配给`worker`线程中,达到多进程目的
 
