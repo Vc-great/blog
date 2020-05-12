@@ -80,6 +80,8 @@ window.onhashchange = function(event) {
 
    **API:**
 
+​	`pushState`和`replaceState`都不会触发`hashChange`
+
 1. `hisstory.pushState`
 
     增加历史,当前指针后面还有旧的条目时,在增加新的历史后会被废弃掉,改变游览器地址,但是不会改变网页内容
@@ -88,11 +90,13 @@ window.onhashchange = function(event) {
 
 2. `history.replaaceState`
 
-   **事件:**
+   **事件 : window.onpopstate**
 
-​	1.`window.onpopstate`
+​	`history.pushSate`和`history.replaceState`都不会出发这个事件
 
+​		仅在游览器前进后端,`history.go/back/forward`调用,`hashchange`的时候触发
 
+​	
 
 参考
 
