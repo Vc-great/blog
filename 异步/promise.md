@@ -42,7 +42,7 @@
 1. 调用过早
    
 - Promise将同步异步统一成异步模式,无法被同步观察到,then的回调总是异步回调
-   
+  
 2. 调用过晚
 
    - 调用res()或rej()时会立即决议,通过then()注册的回调会在下一个异步时机依次被立即调用,并且`相互`之间`无法影响`或`延误`调用的时机 
@@ -99,8 +99,8 @@
 
    `永远都不应该依赖于不同Promise间回调的顺序和调度`
 
-   ```js
-# 1 
+   
+```js
    var p3 = new Promise( function(resolve, reject){
     resolve( "B" );
    });
@@ -110,7 +110,7 @@ var p1 = new Promise(function(resolve, reject){
    p2 = new Promise(function(resolve, reject){
        resolve( "A" );
    })
-   
+
    setTimeout(()=>{console.log(123)})
    p1.then( function(v){
        console.log( v );
@@ -121,7 +121,11 @@ var p1 = new Promise(function(resolve, reject){
    //A
    //B
    //123
-   # 2 
+```
+
+
+
+```js
    setTimeout(function () {
        console.log(3);
    }, 0);
@@ -132,16 +136,17 @@ var p1 = new Promise(function(resolve, reject){
 //1
    //2
    //3
-   ```
-   
+```
+
+
    3. 回调未调用
-   
-   ​		没有任何东西能阻止Promise向你通知它的决议(如果它决议了了的话),成功和拒绝的回调都进行注册,谁在`前面`,执行谁
-   
-   ​		如果回调函数本身包含`JS错误`,这样会看不到你期望的结果,错误不会被吞掉
-   
-   ​		如果`永远不决议`,promise也提供解决方案,`竞态机制`,防止`永远挂住程序`
-   
+
+   		没有任何东西能阻止Promise向你通知它的决议(如果它决议了了的话),成功和拒绝的回调都进行注册,谁在`前面`,执行谁
+
+   		如果回调函数本身包含`JS错误`,这样会看不到你期望的结果,错误不会被吞掉
+
+   		如果`永远不决议`,promise也提供解决方案,`竞态机制`,防止`永远挂住程序`
+
    ```js
    Promise.race([
        foo(),
@@ -162,25 +167,25 @@ var p1 = new Promise(function(resolve, reject){
        })
    }
    ```
-   
+
    4. 调用次数过少或过多
-   
+
    ​		正确的调用次数应该是`1`,过少就是没有被调用过
-   
+
    ​		Promise在创建的时候调用`res(`)或者`rej()`,或者`两个`都调用,Promise只接受第一次的决议,后面的都会被忽略
-   
+
    ​		一旦状态改变,任何时候都能得到这个结果,任何通过then()注册的回调只会被调用一次,如果把同一个回调注册了不止一次,调用的次数就会和注册次数相同,响应函数只会被调用一次
-   
+
    5. 未能传递参数/环境
-   
+
    ​		决议值会向下传递给观察回调,没有任何决议值,返回`undefined`
-   
+
    ​		JS的函数的作用域在函数定义的时候决定,传递函数不会影响函数的环境(`作用域`)
-   
+
    6. 吞掉错误或异常
-   
+
    ​		Promise在任意流程中出现JS异常错误,这个异常会被捕获,并且会使这个Promise被决议`rej()`
-   
+
    ```js
    #定义阶段
    var p = new Promise((res,rej)=>{
@@ -209,11 +214,11 @@ var p1 = new Promise(function(resolve, reject){
    //1
    //aa is not defined
    ```
-   
+
    ### 是可信任的Promise么
-   
+
    ​		 Promise.resolve()  ,将现有对象转为Promise对象
-   
+
    1. 参数是Promise实例,`Promise.resolve()`将不做任何修改,原封不动返回这个实例,需要注意的是, 立即`resolve`的` Promise `对象，是在本轮“事件循环”（event loop）的结束时，而不是在下一轮“事件循环”的开始时 
    
    2. 参数是`thenable`对象(`拥有then方法的对象`),Promise.resolve()会转为Promise对象,会`立即`执行`thenable`对象的then方法
