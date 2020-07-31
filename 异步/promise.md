@@ -266,3 +266,30 @@ var p1 = new Promise(function(resolve, reject){
 
 
 
+## 与async区别
+
+1. `async`语法更简洁
+2. `try catch` 无法捕获`promise`错误,可以捕获`await`错误
+
+```js
+#promise 无法捕获错误
+try{
+    new Promise((res,rej)=>{
+        res(aaa)
+    })
+}catch (e) {
+    console.log(e);
+}
+
+#async 可以捕获错误
+async function fn() {
+    try{
+        await aaa
+    }catch (e) {
+        console.log(e);
+    }
+}
+
+fn()
+```
+

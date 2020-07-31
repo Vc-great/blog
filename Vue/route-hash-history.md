@@ -16,12 +16,6 @@
 | replaceSate(state,title,url) | 替换游览器历史当前条目                                 | void   |
 | state                        | 游览器历史中关联当前文档的状态数据                     | object |
 
-
-
-
-
-
-
 ​	游览器会对当前页面中访问的网址进行记录,不管我们是通过以下哪种方式改变网页,游览器都会把改变后的网址记录下来,`history`的`length`可以查看当前窗口存储的历史记录总数
 
 1. 直接在地址栏输入网址
@@ -95,6 +89,64 @@ window.onhashchange = function(event) {
 ​	`history.pushSate`和`history.replaceState`都不会出发这个事件
 
 ​		仅在游览器前进后端,`history.go/back/forward`调用,`hashchange`的时候触发
+
+
+
+**hash与pushState区别**
+
+一般的需求场景中，hash模式与history模式是差不多的，根据MDN的介绍，调用history.pushState()相比于直接修改hash主要有以下优势：
+
+• pushState设置的新url可以是与当前url同源的任意url,而hash只可修改#后面的部分，故只可设置与当前同文档的url
+
+• pushState设置的新url可以与当前url一模一样，这样也会把记录添加到栈中，而hash设置的新值必须与原来不一样才会触发记录添加到栈中
+
+• pushState通过stateObject可以添加任意类型的数据记录中，而hash只可添加短字符串 pushState可额外设置title属性供后续使用
+
+**监听URL**
+
+```js
+#hash
+window.addEventListener("hashchange", this.getHashUrl, false);
+
+#pushState replaceState
+var _wr = function(type) {
+  const method = history[type];
+  return function() {
+    var e = new Event(type);
+    e.arguments = arguments;
+    window.dispatchEvent(e);
+    // 注意事件监听在url变更方法调用之前 也就是在事件监听的回调函数中获取的页面链接为跳转前的链接
+      return method.apply(this, arguments);
+  };
+};
+
+history.pushState = _wr('pushState');
+history.replaceState = _wr('replaceState');
+
+
+window.addEventListener('pushState', function(e) {
+    const path = e && e.arguments.length > 2 && e.arguments[2];
+
+    const url = /^http/.test(path) ? path : (location.protocol + '//' + location.host + path);
+
+  console.log('old:'+location.href);
+  console.log('old:'+location.href,'new:'+url);
+});
+
+
+window.addEventListener('replaceState', function(e) {
+  var path = e && e.arguments.length > 2 && e.arguments[2];
+  var url = /^http/.test(path) ? path : (location.protocol + '//' + location.host + path);
+  console.log('old:'+location.href,'new:'+url);
+});
+
+
+
+```
+
+
+
+
 
 ​	
 
