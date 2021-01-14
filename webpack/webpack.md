@@ -30,7 +30,17 @@
 
   - AMD   
 
-    1.   `RequireJS` 在推广过程中对模块定义的规范化产出 
+    采用异步的方式去加载依赖的模块,AMD规范主要是为了解决针对游览器环境的模块化问题,代表性实现`requirejs`
+
+    **优点:**
+
+    1.   可在不转换代码的情况下直接在游览器中运行
+    2.   可加载多个依赖
+    3.   代码可运行在游览器环境和`Node.js`环境下
+
+    **缺点:**
+
+    1. `JavaScript`运行环境没有原生支持AMD,需要先导入实现了AMD的库后才能正常使用
 
   - CMD
 
@@ -165,7 +175,18 @@
     - UMD根据当前全局对象中的值判断目前处于哪种模块环境
     - `注意:`webpack中,由于它同时支持AMD及CommonJS,也许工程所有模块都是commonJS,而UMD标准却发现当前有AMD环境,并使用了AMD方式导出,这会使得模块导入时出错.当需要这样做时,我们可以更改UMD模块中判断的顺序,使其已CommonJS的形式导出
 
-    
+
+### 自动化构建
+
+​	构建就是做这件事情,把源代码转换成发布到线上的可执行`JavaScript`,`css`,`HTML`代码,包括以下内容:
+
+- 代码转换: ES6编译为ES5,LESS编译为CSS等
+- 文件优化:  压缩JS,CSS,HTML代码,压缩合并图片等
+- 代码分割: 提取多个页面的公共代码,提取首屏不需要执行部分的代码让其异步加载
+- 模块合并 : 在采用模块化的项目里会有很多个模块和文件,需要构建功能把模块分类合并成一个文件
+- 自动刷新 : 监听本地源代码的变化,自动重新构建,刷新游览器
+- 代码校验 : 在代码被提交到仓库前需要校验代码是否符合规范,一级单元测试是否通过
+- 自动发布: 更新代码完成后,自动构建出线上发布代码并传输给发布系统
 
 ### 为什么选择weback
 
@@ -527,7 +548,7 @@ loader只能用于转换模块,插件可以处理`整个编译生命周期`中�
 ### babel-loader
 
 - `babel-loader` 使babel与webpack协同工作的模块
-- `@babel/core` babel编译器的核心模块
+- `@babel/core` babel编译器的核心模块,把js编译成AST
 - `@babel/prest-env`Babel官方推荐的预置器,可根据用户设置的`目标环境`自动`添加`所需的`插件`和`补丁`来编译`ES6+`代码
 
 ​    babel-loader会将所有JS文件都进行编译,所以需要在exclude中添加`node_modules`,否则会令babel-loader编译其中的所有模块,会严重`拖慢打包速度`,并且有可能`修改第三方模块原有的行为`
@@ -876,48 +897,7 @@ module.exports = {
 >
 > 主要工作就是接收游览器请求,然后将资源返回,`启动服务`的时候会让webpack进行模块化打包并将资源准备好,`webpack-dev-server`接收到游览器的资源请求时,首先进行`URL地址校验`,如果地址为资源服务地址(`publicPath`),就会从webpack的打包结果中寻找该资源并返回给游览器.如果`不属于`资源服务地址,则直接读取硬盘中的源文件并将其返回
 
-## source map
 
-![source-map](D:\个人\Blog\webpack\webpack.assets\source-map.png)
-
-​		`eval`代码块的最后添加source map的url,指定对应的文件
-
-
-
-​		source map 是指将`编译` 、`打包` 、`压缩`后的代码`映射`会源代码的`过程`
-
-​		webpack在编译过程中,如果我们启用了`devtool`,source map就会跟随源代码被传递,最后生成`.map`文件
-
-​		调试代码时,会加载对应的`.map`文件找到对应的源代码
-
-- 安全问题
-
-  不打开开发者工具不会加载,任何人都能看到
-
-  webpack提供了两种hidden-source-map和nosources-source-map来提升source map的安全性
-
-- hidden-source-map
-
-  产出完成的map文件,但是不会在bundle文件中添加对于map文件的引用,开发者工具中看不到map文件,需要`第三方服务`将map文件上传到上面,`Sentry(错误跟踪平台)`能实现
-
-- nosources-source-map
-
-  文件被隐藏,可以在控制台中查看报错信息
-
-- nginx设置白名单
-
-  将`.map文件只对白名单开放`
-
-
-
-| 名称                         | 说明                                         |      |
-| ---------------------------- | -------------------------------------------- | ---- |
-| source map                   | 大和全,单独文件,显示行和列                   |      |
-| eval-source-map              | 不会产生单独文件,显示行和列                  |      |
-| cheap-module-source-map      | 不会产生列,单独文件,可以保留                 |      |
-| cheap-module-eval-source-map | 不会产生文件,集成在打包后的文件中,不会产生列 |      |
-
- ![img](https://user-gold-cdn.xitu.io/2019/7/24/16c21c32ae73d7c0?imageView2/0/w/1280/h/960/format/webp/ignore-error/1) 
 
 ##  sideEffects 
 
@@ -960,6 +940,8 @@ document.body.appendChild(document.createElement('div'));
          ["@babel/preset-env",{
            "modules": false
          }]
+     ```
+
     ],
      ```
 

@@ -293,3 +293,6 @@ async function fn() {
 fn()
 ```
 
+**then链式调用**
+
+​	每次调用then都返回一个新的promise,状态已经决议不能在改变,返回新的promise修改状态
